@@ -40,59 +40,113 @@
         <text>IPv6 prefix for device</text>
       </description>
     </leaf>
+    <leaf name="dhcp_default_duid">
+      <uci:option name="dhcp_default_duid"/>
+      <type name="string"/>
+      <description>
+        <text>The default DUID for this system, used when acting as a DHCP/DHCPv6 server or client</text>
+      </description>
+    </leaf>
   </container>
-  <container name="interfaces">
-    <list name="interface">
-      <uci:section name="interface"/>
-      <key value="ifname"/>
-      <leaf name="ifname">
-        <uci:option name="ifname"/>
+  <container name="devices">
+    <list name="device">
+      <uci:section name="device"/>
+      <uci:leaf-as-name name="devname"/>
+      <key value="name"/>
+      <leaf name="devname">
+        <type name="string"/>
+      </leaf>
+      <leaf name="name">
+        <uci:option name="name"/>
         <type name="string"/>
         <mandatory value="true"/>
         <description>
-          <text>Physical interface name</text>
-        </description>
-      </leaf>
-      <leaf name="iftype">
-        <uci:option name="type"/>
-        <type name="string"/>
-        <description>
-          <text>Type of interface</text>
-        </description>
-      </leaf>
-      <leaf name="stp">
-        <uci:option name="stp"/>
-        <type name="openwrt-bool"/>
-        <description>
-          <text>Enable spanning tree protocol</text>
-        </description>
-      </leaf>
-      <leaf name="bridge_empty">
-        <uci:option name="bridge_empty"/>
-        <type name="openwrt-bool"/>
-        <description>
-          <text>Enable creating empty bridge</text>
-        </description>
-      </leaf>
-      <leaf name="igmp_snooping">
-        <uci:option name="imgp_snooping"/>
-        <type name="openwrt-bool"/>
-        <description>
-          <text>Enable multicast_snooping</text>
-        </description>
-      </leaf>
-      <leaf name="multicast_querier">
-        <uci:option name="multicast_querier"/>
-        <type name="openwrt-bool"/>
-        <description>
-          <text>Enable mutlicast_queries</text>
+          <text>L3 device name</text>
         </description>
       </leaf>
       <leaf name="macaddr">
         <uci:option name="macaddr"/>
         <type name="yang:phys-address"/>
         <description>
-          <text>Override the MAC address of the interface</text>
+          <text>Override the MAC address of the device</text>
+        </description>
+      </leaf>
+      <leaf name="devtype">
+        <uci:option name="type"/>
+        <type name="string"/>
+        <description>
+          <text>Type of the device</text>
+        </description>
+      </leaf>
+      <leaf name="ifname">
+        <uci:option name="ifname"/>
+        <type name="string"/>
+        <description>
+          <text>The base L2 device</text>
+        </description>
+      </leaf>
+      <leaf name="rxpause">
+        <uci:option name="rxpause"/>
+        <type name="openwrt-bool"/>
+        <description>
+          <text>controls the receive (RX) flow control</text>
+        </description>
+      </leaf>
+      <leaf name="txpause">
+        <uci:option name="txpause"/>
+        <type name="openwrt-bool"/>
+        <description>
+          <text>controls the transmission flow control (TX)</text>
+        </description>
+      </leaf>
+      <leaf name="autoneg">
+        <uci:option name="autoneg"/>
+        <type name="openwrt-bool"/>
+        <description>
+          <text>setting to 1 enables auto-negotiation that determines whether the interface will automatically negotiate the best link parameters</text>
+        </description>
+      </leaf>
+      <leaf name="speed">
+        <uci:option name="speed"/>
+        <type name="string"/>
+        <description>
+          <text>configures speed of the device</text>
+        </description>
+      </leaf>
+      <leaf name="duplex">
+        <uci:option name="duplex"/>
+        <type name="openwrt-bool"/>
+        <description>
+          <text>true configures Full Duplex and false for Half Duplex</text>
+        </description>
+      </leaf>
+      <leaf name="table">
+        <uci:option name="table"/>
+        <type name="string"/>
+        <description>
+          <text>When type is set to vrf, set routing table name or number here</text>
+        </description>
+      </leaf>
+    </list>
+  </container>
+  <container name="interfaces">
+    <list name="interface">
+      <uci:section name="interface"/>
+      <uci:leaf-as-name name="name"/>
+      <key value="name"/>
+      <leaf name="name">
+        <uci:option name="name"/>
+        <type name="string"/>
+        <description>
+          <text>Interface name</text>
+        </description>
+      </leaf>
+      <leaf name="device">
+        <uci:option name="device"/>
+        <type name="string"/>
+        <mandatory value="true"/>
+        <description>
+          <text>L3 device name</text>
         </description>
       </leaf>
       <leaf name="mtu">
@@ -161,7 +215,7 @@ regardless of the link being active ('1') or only after the link has become acti
       </leaf>
       <leaf name="netmask">
         <uci:option name="netmask"/>
-        <type name="inet:ipv4-prefix"/>
+        <type name="inet:ipv4-address"/>
         <description>
           <text>Alias Netmask</text>
         </description>
@@ -530,6 +584,7 @@ regardless of the link being active ('1') or only after the link has become acti
       <leaf name="name">
         <uci:option name="name"/>
         <type name="string"/>
+        <mandatory value="true"/>
         <description>
           <text>The name of the switch to configure</text>
         </description>
@@ -589,9 +644,17 @@ regardless of the link being active ('1') or only after the link has become acti
     <list name="switch_vlan">
       <uci:section name="switch_vlan"/>
       <key value="device vlan"/>
+      <leaf name="vlan_description">
+        <uci:option name="description"/>
+        <type name="string"/>
+        <description>
+          <text>A human-readable description of the VLAN configuration</text>
+        </description>
+      </leaf>
       <leaf name="device">
         <uci:option name="device"/>
         <type name="string"/>
+        <mandatory value="true"/>
         <description>
           <text>The device to configure</text>
         </description>
@@ -599,6 +662,7 @@ regardless of the link being active ('1') or only after the link has become acti
       <leaf name="vlan">
         <uci:option name="vlan"/>
         <type name="uint64"/>
+        <mandatory value="true"/>
         <description>
           <text>The VLAN table index to configure</text>
         </description>
@@ -624,6 +688,7 @@ regardless of the link being active ('1') or only after the link has become acti
       <leaf name="device">
         <uci:option name="device"/>
         <type name="string"/>
+        <mandatory value="true"/>
         <description>
           <text>The device to configure</text>
         </description>
@@ -631,6 +696,7 @@ regardless of the link being active ('1') or only after the link has become acti
       <leaf name="port">
         <uci:option name="port"/>
         <type name="uint64"/>
+        <mandatory value="true"/>
         <description>
           <text>The port index to configure</text>
         </description>

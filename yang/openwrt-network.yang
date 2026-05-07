@@ -35,54 +35,106 @@ module openwrt-network {
       type inet:ipv6-prefix;
       description "IPv6 prefix for device";
     }
+
+    leaf dhcp_default_duid {
+      uci:option "dhcp_default_duid";
+      type string; // TODO CHANGE W/ hexstring
+      description "The default DUID for this system, used when acting as a DHCP/DHCPv6 server or client";
+    }
   }
 
-  container interfaces {
-    list interface {
-      uci:section "interface";
-      key "ifname";
+  container devices {
+    list device {
+      uci:section "device";
+      uci:leaf-as-name "devname";
+      key "name";
 
-      leaf ifname {
-        uci:option "ifname";
+      leaf devname {
+        type string;
+      }
+
+      leaf name {
+        uci:option "name";
         type string;
         mandatory true;
-        description "Physical interface name";
-      }
-
-      leaf iftype {
-        uci:option "type";
-        type string;
-        description "Type of interface";
-      }
-
-      leaf stp {
-        uci:option "stp";
-        type openwrt-bool;
-        description "Enable spanning tree protocol";
-      }
-
-      leaf bridge_empty {
-        uci:option "bridge_empty";
-        type openwrt-bool;
-        description "Enable creating empty bridge";
-      }
-
-      leaf igmp_snooping {
-        uci:option "imgp_snooping";
-        type openwrt-bool;
-        description "Enable multicast_snooping";
-      }
-
-      leaf multicast_querier {
-        uci:option "multicast_querier";
-        type openwrt-bool;
-        description "Enable mutlicast_queries";
+        description "L3 device name";
       }
 
       leaf macaddr {
         uci:option "macaddr";
         type yang:phys-address;
-        description "Override the MAC address of the interface";
+        description "Override the MAC address of the device";
+      }
+
+      leaf devtype {
+        uci:option "type";
+        type string;
+        description "Type of the device";
+      }
+
+      leaf ifname {
+        uci:option "ifname";
+        type string;
+        description "The base L2 device";
+      }
+
+      // List 'ports' unsupported
+
+      leaf rxpause {
+        uci:option "rxpause";
+        type openwrt-bool;
+        description "controls the receive (RX) flow control";
+      }
+
+      leaf txpause {
+        uci:option "txpause";
+        type openwrt-bool;
+        description "controls the transmission flow control (TX)";
+      }
+
+      leaf autoneg {
+        uci:option "autoneg";
+        type openwrt-bool;
+        description "setting to 1 enables auto-negotiation that determines whether the interface will automatically negotiate the best link parameters";
+      }
+
+      leaf speed {
+        uci:option "speed";
+        type string;
+        description "configures speed of the device";
+      }
+
+      leaf duplex {
+        uci:option "duplex";
+        type openwrt-bool;
+        description "true configures Full Duplex and false for Half Duplex";
+      }
+
+      leaf table {
+        uci:option "table";
+        type string;
+        description "When type is set to vrf, set routing table name or number here";
+      }
+    }
+  }
+
+  container interfaces {
+    list interface {
+      uci:section "interface";
+      uci:leaf-as-name "name";
+      key "name";
+
+      leaf name {
+        uci:option "name";
+        type string;
+        description "Interface name";
+      }
+
+      leaf device {
+        uci:option "device";
+        type string;
+        mandatory true;
+        description "L3 device name";
       }
 
       leaf mtu {
@@ -143,7 +195,7 @@ module openwrt-network {
 
       leaf netmask {
         uci:option "netmask";
-        type inet:ipv4-prefix;
+        type inet:ipv4-address;
         description "Alias Netmask";
       }
 
@@ -475,6 +527,7 @@ module openwrt-network {
       leaf name {
         uci:option "name";
         type string;
+        mandatory true;
         description "The name of the switch to configure";
       }
 
@@ -533,15 +586,23 @@ module openwrt-network {
       uci:section "switch_vlan";
       key "device vlan";
 
+      leaf vlan_description {
+        uci:option "description";
+        type string;
+        description "A human-readable description of the VLAN configuration";
+      }
+
       leaf device {
         uci:option "device";
         type string;
+        mandatory true;
         description "The device to configure";
       }
 
       leaf vlan {
         uci:option "vlan";
         type uint64;
+        mandatory true;
         description "The VLAN table index to configure";
       }
 
@@ -565,12 +626,14 @@ module openwrt-network {
       leaf device {
         uci:option "device";
         type string;
+        mandatory true;
         description "The device to configure";
       }
 
       leaf port {
         uci:option "port";
         type uint64;
+        mandatory true;
         description "The port index to configure";
       }
 

@@ -37,6 +37,18 @@ struct json_object *uci_get_list(struct json_object *yang, struct UciPath *path,
       path->where = 1;
     }
     struct json_object *top_level = json_object_new_object();
+
+    struct json_object *leaf_as_name_obj = NULL;
+    if (json_object_object_get_ex(yang, YANG_UCI_LEAF_AS_NAME, &leaf_as_name_obj)) {
+      const char *leaf_as_name = json_object_get_string(leaf_as_name_obj);
+      char path_string[512];
+      char section_name[512];
+      uci_combine_to_path(path, path_string, sizeof(path_string));
+      if (uci_read_section_name(path_string, section_name, sizeof(section_name)) == 0) {
+        json_object_object_add(top_level, leaf_as_name, json_object_new_string(section_name));
+      }
+    }
+
     json_object_object_foreach(map, key, val) {
       error err_rec = RE_OK;
       struct json_object *check = build_recursive(val, path, &err_rec, 0);

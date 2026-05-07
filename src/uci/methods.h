@@ -27,6 +27,7 @@ struct UciWhere {
   { "", "", "", "", 0, 0 }
 
 int uci_read_option(char *path, char *buffer, size_t size);
+int uci_read_section_name(char *path, char *buffer, size_t size);
 char **uci_read_list(char *path);
 int uci_path_exists(char *path);
 int uci_index_where(struct UciWhere *where);

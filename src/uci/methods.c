@@ -35,6 +35,35 @@ int uci_read_option(char *path, char *buffer, size_t size) {
 }
 
 /**
+ * reads a uci section name into a buffer by path
+ * @param path the path to be used
+ * @param buffer the buffer the output should be copied to
+ * @param size the size of the buffer
+ * @return EXIT_SUCCESS or EXIT_FAILURE
+ */
+int uci_read_section_name(char *path, char *buffer, size_t size) {
+  struct uci_ptr ptr;
+  struct uci_context *ctx = uci_alloc_context();
+  if (!ctx) {
+    return 1;
+  }
+
+  unsigned int UCI_LOOKUP_COMPLETE = (1u << 1u);
+
+  if ((uci_lookup_ptr(ctx, &ptr, path, true) != UCI_OK) ||
+      (ptr.s == NULL)) {
+    uci_free_context(ctx);
+    return 1;
+  }
+
+  if (ptr.flags & UCI_LOOKUP_COMPLETE) {
+    strncpy(buffer, ptr.s->e.name, size);
+  }
+  uci_free_context(ctx);
+  return 0;
+}
+
+/**
  * reads a uci option into a buffer by path
  * @param path the path to be used
  * @param ret the initialized vector the output should be copied to
