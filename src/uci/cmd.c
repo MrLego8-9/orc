@@ -12,15 +12,18 @@ struct UciWritePair *initialize_uci_write_pair(struct UciPath *path,
     return NULL;
   }
   output->path = *path;
-  output->value = (char *)value;
+  output->value = value;
   output->type = type;
   return output;
 }
 
 int free_uci_write_list(UciWritePair **list) {
+  if (!list) {
+    vector_free(list);
+    return 0;
+  }
   for (size_t i = 0; i < vector_size(list); i++) {
-    UciWritePair *cmd = list[i];
-    free(cmd->value);
+    free(list[i]);
   }
   vector_free(list);
   return 0;

@@ -18,7 +18,9 @@ struct CgiContext *cgi_context_init() {
   }
 
   char *path = getenv("REQUEST_URI");
-  path = path + strlen(ROOT);
+  if (path != NULL) {
+    path = path + strlen(ROOT);
+  }
   char *query = getenv("QUERY_STRING");
   char *method = getenv("REQUEST_METHOD");
   char *media_accept = getenv("HTTP_ACCEPT");

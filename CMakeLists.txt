@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11.1)
 project(restconf)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 23)
 include_directories(src)
 
 find_path(JSON_C_INCLUDE_DIR json-c/json.h)
@@ -16,5 +16,15 @@ find_library(UCI uci)
 find_library(UBOX ubox)
 
 add_executable(restconf ${restconf_SRC})
+target_compile_options(restconf PUBLIC
+    -g3
+    -Wno-unused-parameter
+    -Wno-unused-but-set-variable
+    -Wno-unused-variable
+    -Wno-analyzer-malloc-leak
+    -Wall
+    -Wextra
+    -fanalyzer
+)
 target_link_libraries(restconf ${JSON_C} ${UCI} ${UBOX})
 INSTALL(TARGETS restconf RUNTIME DESTINATION /www/cgi-bin/)

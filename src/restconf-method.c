@@ -19,6 +19,7 @@ static UciWritePair **verify_content_yang(struct json_object *content,
                                           int root, int check_exists) {
   UciWritePair **command_list = NULL;
   const char *child_type = NULL;
+  struct UciPath *old_path = NULL;
   if (!(child_type = json_get_string(yang_node, YANG_TYPE))) {
     *err = YANG_SCHEMA_ERROR;
     return NULL;
@@ -96,12 +97,20 @@ static UciWritePair **verify_content_yang(struct json_object *content,
         struct json_object *tmp = json_object_array_get_idx(content, index);
         path->index = pos;
         path->where = 1;
+        old_path = (struct UciPath *) malloc(sizeof(struct UciPath));
+        if (!old_path) {
+          return NULL;
+        }
+        memcpy(old_path, path, sizeof(struct UciPath));
         UciWritePair **tmp_list =
             verify_content_yang(tmp, yang_node, path, err, 0, check_exists);
         if (*err != RE_OK) {
           free_uci_write_list(tmp_list);
+          free(old_path);
           return NULL;
         }
+        memcpy(path, old_path, sizeof(struct UciPath));
+        free(old_path);
         for (size_t i = 0; i < vector_size(tmp_list); i++) {
           vector_push_back(command_list, tmp_list[i]);
         }
@@ -528,6 +537,8 @@ int data_post(struct CgiContext *cgi, char **pathvec, int root) {
     retval = restconf_operation_failed_internal();
     goto done;
   }
+
+  memset(key_out, 0, sizeof(key_out));
   root_key_copy = str_dup(root_key);
   struct json_object *created = NULL;
   if ((created = json_get_object_from_map(top_level, root_key_copy))) {
@@ -540,7 +551,10 @@ int data_post(struct CgiContext *cgi, char **pathvec, int root) {
             strcat(key_out, json_object_get_string(value));
             strcat(key_out, ",");
           }
-          key_out[strlen(key_out) - 1] = '\0';
+          const size_t key_out_len = strlen(key_out);
+          if (key_out_len > 0) {
+            key_out[key_out_len - 1] = '\0';
+          }
         }
       }
     }
@@ -695,11 +709,12 @@ int data_put(struct CgiContext *cgi, char **pathvec, int root) {
     goto done;
   }
 
-  if (item) free(item);
+  //if (item) free(item);
   if (keys) free(keys);
 
   delete_uci = uci;
 
+  memset(key_out, 0, sizeof(key_out));
   if (yang_is_list(json_get_string(top_level, YANG_TYPE))) {
     struct json_object *keys = NULL;
     if ((keys = json_get_array(top_level, YANG_KEYS))) {
@@ -709,7 +724,10 @@ int data_put(struct CgiContext *cgi, char **pathvec, int root) {
           strcat(key_out, json_object_get_string(value));
           strcat(key_out, ",");
         }
-        key_out[strlen(key_out) - 1] = '\0';
+        const size_t key_out_len = strlen(key_out);
+        if (key_out_len > 0) {
+          key_out[strlen(key_out) - 1] = '\0';
+        }
       }
     }
   }
